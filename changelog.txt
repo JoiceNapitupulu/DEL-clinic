@@ -2,3 +2,4 @@ edit databasconfig
 tes
 ganti format
 tes lagi
+model

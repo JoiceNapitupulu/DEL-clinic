@@ -1,25 +1,37 @@
--- Buat tabel Orang yang bertindak sebagai tabel dasar (opsional, karena Data Mapper bisa langsung tabel per entitas)
--- Dalam desain ini, kita buat tabel terpisah untuk setiap peran (Pasien, Dokter, Perawat)
--- untuk menyederhanakan ORM tanpa framework.
+-- ==============================================================================
+-- 1. MEMBERSIHKAN DATABASE (Mencegah Data Double & Reset ID ke 1)
+-- ==============================================================================
+DROP TABLE IF EXISTS rekam_medis CASCADE;
+DROP TABLE IF EXISTS pasien CASCADE;
+DROP TABLE IF EXISTS dokter CASCADE;
+DROP TABLE IF EXISTS perawat CASCADE;
 
+-- ==============================================================================
+-- 2. MEMBUAT ULANG STRUKTUR TABEL (Sesuai dengan Model & Mapper Java)
+-- ==============================================================================
+
+-- Tabel Pasien
 CREATE TABLE pasien (
     id SERIAL PRIMARY KEY,
     nama VARCHAR(255) NOT NULL,
     umur INT NOT NULL
 );
 
+-- Tabel Dokter
 CREATE TABLE dokter (
     id SERIAL PRIMARY KEY,
     nama VARCHAR(255) NOT NULL,
     spesialisasi VARCHAR(255) NOT NULL
 );
 
+-- Tabel Perawat
 CREATE TABLE perawat (
     id SERIAL PRIMARY KEY,
     nama VARCHAR(255) NOT NULL,
     shift VARCHAR(50) NOT NULL
 );
 
+-- Tabel Rekam Medis (Sudah termasuk kolom untuk Surat Sakit & Foreign Keys)
 CREATE TABLE rekam_medis (
     id SERIAL PRIMARY KEY,
     pasien_id INT NOT NULL,
@@ -32,22 +44,29 @@ CREATE TABLE rekam_medis (
     keluhan TEXT,
     diagnosis TEXT,
     resep_obat TEXT,
-    CONSTRAINT fk_pasien FOREIGN KEY (pasien_id) REFERENCES pasien(id),
-    CONSTRAINT fk_dokter FOREIGN KEY (dokter_id) REFERENCES dokter(id),
-    CONSTRAINT fk_perawat FOREIGN KEY (perawat_id) REFERENCES perawat(id)
+    
+    -- Relasi antar tabel
+    CONSTRAINT fk_pasien FOREIGN KEY (pasien_id) REFERENCES pasien(id) ON DELETE CASCADE,
+    CONSTRAINT fk_dokter FOREIGN KEY (dokter_id) REFERENCES dokter(id) ON DELETE CASCADE,
+    CONSTRAINT fk_perawat FOREIGN KEY (perawat_id) REFERENCES perawat(id) ON DELETE CASCADE
 );
 
--- Insert dummy data untuk dokter dan perawat agar ID 1 tersedia untuk simulasi
+-- ==============================================================================
+-- 3. MEMASUKKAN DATA AWAL (Hanya 1x agar ID Pas & Tidak Double)
+-- ==============================================================================
+
+-- Data Dokter Aktif (Sesuai dengan Dokter di Main.java)
 INSERT INTO dokter (nama, spesialisasi) VALUES 
 ('dr. Joshua', 'Umum');
 
+-- Data Perawat Aktif (Sesuai dengan Perawat di Main.java)
 INSERT INTO perawat (nama, shift) VALUES 
-('Suster Joice', 'Pagi'), ('Suster Winda', 'Siang'), ('Suster Rahel', 'Malam');
+('Suster Joice', 'Pagi'), 
+('Suster Winda', 'Siang'), 
+('Suster Rahel', 'Malam');
 
-
---hapus semua tabel karena sebelumnya ada kesalahan input
-
-DROP TABLE IF EXISTS rekam_medis CASCADE;
-DROP TABLE IF EXISTS pasien CASCADE;
-DROP TABLE IF EXISTS dokter CASCADE;
-DROP TABLE IF EXISTS perawat CASCADE;
+-- ==============================================================================
+-- 4. VERIFIKASI (Opsional: Menampilkan hasil akhir tabel)
+-- ==============================================================================
+SELECT * FROM dokter;
+SELECT * FROM perawat;

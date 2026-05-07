@@ -241,6 +241,35 @@ public class Main {
 
                         rekamMedisMapper.insertRekamMedis(rm);
                         printSuccess("Rekam medis berhasil disimpan.");
+                        rekamMedisMapper.insertRekamMedis(rm);
+                        printSuccess("Rekam medis berhasil disimpan.");
+
+                        // ====== KODE TAMBAHAN UNTUK SURAT SAKIT ======
+                        System.out.println();
+                        System.out.print(GREEN + "  ➤ Cetak Surat Keterangan Sakit? (Y/T): " + WHITE);
+                        String cetakSurat = scanner.nextLine().trim();
+
+                        if (cetakSurat.equalsIgnoreCase("Y")) {
+                            System.out.println(CYAN + "\n  ==================================================" + RESET);
+                            System.out.println(CYAN + "  ║" + RESET + BOLD + "             SURAT KETERANGAN SAKIT             " + RESET + CYAN + "║" + RESET);
+                            System.out.println(CYAN + "  ║" + RESET + BOLD + "                 CARE HUB CLINIC                " + RESET + CYAN + "║" + RESET);
+                            System.out.println(CYAN + "  ==================================================" + RESET);
+                            System.out.println("    Dengan ini menerangkan bahwa pasien berikut:");
+                            System.out.println();
+                            System.out.println("    Nama      : " + pasienDiperiksa.getNama());
+                            System.out.println("    Suhu      : " + suhuStr + " °C");
+                            System.out.println("    Keluhan   : " + keluhan);
+                            System.out.println("    Diagnosis : " + diagnosis);
+                            System.out.println();
+                            System.out.println("    Membutuhkan waktu untuk beristirahat sehingga ");
+                            System.out.println("    " + YELLOW + BOLD + "berhalangan hadir untuk melakukan aktivitas" + RESET);
+                            System.out.println("    " + YELLOW + BOLD + "selama 1 (satu) hari penuh" + RESET + " sejak diperiksa.");
+                            System.out.println();
+                            System.out.println("    Demikian surat keterangan ini dibuat agar dapat ");
+                            System.out.println("    dipergunakan sebagaimana mestinya.");
+                            System.out.println(CYAN + "  ==================================================\n" + RESET);
+                        }
+                        // =============================================
                     } else {
                         printError("Antrean kosong. Tidak ada pasien yang dapat dipanggil.");
                     }

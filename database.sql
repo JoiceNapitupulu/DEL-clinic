@@ -43,3 +43,11 @@ INSERT INTO dokter (nama, spesialisasi) VALUES
 
 INSERT INTO perawat (nama, shift) VALUES 
 ('Suster Joice', 'Pagi'), ('Suster Winda', 'Siang'), ('Suster Rahel', 'Malam');
+
+
+--hapus semua tabel karena sebelumnya ada kesalahan input
+
+DROP TABLE IF EXISTS rekam_medis CASCADE;
+DROP TABLE IF EXISTS pasien CASCADE;
+DROP TABLE IF EXISTS dokter CASCADE;
+DROP TABLE IF EXISTS perawat CASCADE;

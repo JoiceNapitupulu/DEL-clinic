@@ -86,7 +86,7 @@ public class Main {
 
     // ─── Tampilan Menu Utama ─────────────────────────────────────────────────────
 
-    private static void printMenu(Queue<Pasien> antrean) {
+   private static void printMenu(Queue<Pasien> antrean) {
         int w = 39;
         printLine(YELLOW, "┌", "─", "┐", w);
         printRow(YELLOW, centerText(WHITE + BOLD + "MENU UTAMA" + RESET, w - 1, 10), w - 1);
@@ -94,7 +94,9 @@ public class Main {
         printRow(YELLOW, "  " + GREEN  + "[1]" + RESET + WHITE + " Pendaftaran Pasien Baru" + RESET, w - 1);
         printRow(YELLOW, "  " + BLUE   + "[2]" + RESET + WHITE + " Panggil & Periksa Pasien" + RESET, w - 1);
         printRow(YELLOW, "  " + CYAN   + "[3]" + RESET + WHITE + " Lihat Semua Rekam Medis" + RESET, w - 1);
-        printRow(YELLOW, "  " + RED    + "[4]" + RESET + WHITE + " Keluar" + RESET, w - 1);
+        // BARIS BARU: Tambahkan opsi Ganti Shift
+        printRow(YELLOW, "  " + MAGENTA+ "[4]" + RESET + WHITE + " Ganti Shift Perawat" + RESET, w - 1);
+        printRow(YELLOW, "  " + RED    + "[5]" + RESET + WHITE + " Keluar" + RESET, w - 1);
         printLine(YELLOW, "└", "─", "┘", w);
         String antreanInfo = antrean.isEmpty()
             ? GRAY + "  Antrean saat ini: " + RED + "Kosong" + RESET
@@ -103,7 +105,6 @@ public class Main {
         System.out.println();
         System.out.print(GREEN + "  ➤ Pilih menu: " + WHITE);
     }
-
     // ─── Tampilan Section Header ─────────────────────────────────────────────────
 
     private static void printSectionHeader(String title, String color) {
@@ -241,9 +242,7 @@ public class Main {
 
                         rekamMedisMapper.insertRekamMedis(rm);
                         printSuccess("Rekam medis berhasil disimpan.");
-                        rekamMedisMapper.insertRekamMedis(rm);
-                        printSuccess("Rekam medis berhasil disimpan.");
-
+                        
                         // ====== KODE TAMBAHAN UNTUK SURAT SAKIT ======
                         System.out.println();
                         System.out.print(GREEN + "  ➤ Cetak Surat Keterangan Sakit? (Y/T): " + WHITE);
@@ -286,7 +285,37 @@ public class Main {
                     pause(scanner);
                     break;
 
-                case "4":
+               case "4":
+                    clearScreen();
+                    printSectionHeader("GANTI SHIFT PERAWAT", MAGENTA);
+                    
+                    System.out.println("  Pilih perawat yang bertugas:");
+                    System.out.println("  [1] Suster Joice (Pagi)");
+                    System.out.println("  [2] Suster Winda (Siang)");
+                    System.out.println("  [3] Suster Rahel (Malam)");
+                    System.out.println();
+                    
+                    String shiftPilihan = inputField(scanner, "Pilihan (1-3): ");
+                    
+                    if (shiftPilihan.equals("1")) {
+                        perawatAktif = new Perawat(1, "Suster Joice", "Pagi");
+                        printSuccess("Shift berhasil diganti ke Suster Joice (Pagi).");
+                    } else if (shiftPilihan.equals("2")) {
+                        perawatAktif = new Perawat(2, "Suster Winda", "Siang");
+                        printSuccess("Shift berhasil diganti ke Suster Winda (Siang).");
+                    } else if (shiftPilihan.equals("3")) {
+                        perawatAktif = new Perawat(3, "Suster Rahel", "Malam");
+                        printSuccess("Shift berhasil diganti ke Suster Rahel (Malam).");
+                    } else {
+                        printError("Pilihan tidak valid. Shift tidak diubah.");
+                    }
+                    
+                    printSectionFooter(MAGENTA);
+                    pause(scanner);
+                    break;
+
+                // UBAH DARI case "4" MENJADI case "5"
+                case "5":
                     clearScreen();
                     System.out.println();
                     System.out.println(CYAN + "  ╔══════════════════════════════════╗" + RESET);
@@ -297,7 +326,8 @@ public class Main {
                     break;
 
                 default:
-                    printError("Menu tidak tersedia. Silakan pilih 1–4.");
+                    // Pesan error diubah agar menyebutkan angka 1-5
+                    printError("Menu tidak tersedia. Silakan pilih 1–5.");
                     pause(scanner);
                     break;
             }

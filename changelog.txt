@@ -5,3 +5,5 @@ tes lagi
 model
 ubah format
 perbaiki main
+perbaiki database query
+

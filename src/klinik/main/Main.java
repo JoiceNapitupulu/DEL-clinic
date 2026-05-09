@@ -1,5 +1,8 @@
 package klinik.main;
 
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Scanner;
 import klinik.mapper.PasienMapper;
 import klinik.mapper.RekamMedisMapper;
 import klinik.model.Dokter;
@@ -7,13 +10,8 @@ import klinik.model.Pasien;
 import klinik.model.Perawat;
 import klinik.model.RekamMedis;
 
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Scanner;
-
 public class Main {
 
-    // ─── ANSI Color Codes ───────────────────────────────────────────────────────
     private static final String RESET   = "\033[0m";
     private static final String BOLD    = "\033[1m";
     private static final String CYAN    = "\033[36m";
@@ -25,142 +23,106 @@ public class Main {
     private static final String WHITE   = "\033[97m";
     private static final String GRAY    = "\033[90m";
 
-    // ─── UI Helpers ─────────────────────────────────────────────────────────────
-
     private static void clearScreen() {
         System.out.print("\033[H\033[2J");
         System.out.flush();
-    }
-
-    private static void printLine(String color, String left, String mid, String right, int width) {
-        System.out.print(color + left);
-        System.out.print(mid.repeat(width));
-        System.out.println(right + RESET);
-    }
-
-    private static void printRow(String color, String content, int totalWidth) {
-        // totalWidth = inner width (tidak termasuk border kiri-kanan)
-        int contentLen = stripAnsi(content).length();
-        int padding = totalWidth - contentLen;
-        System.out.println(color + "│" + RESET + " " + content + " ".repeat(Math.max(0, padding - 1)) + color + "│" + RESET);
     }
 
     private static String stripAnsi(String s) {
         return s.replaceAll("\033\\[[;\\d]*m", "");
     }
 
-    private static void printDivider(String color, int width) {
-        System.out.println(color + "├" + "─".repeat(width) + "┤" + RESET);
+    private static void printLine(String color, String left, String mid, String right, int w) {
+        System.out.println(color + left + mid.repeat(w) + right + RESET);
     }
 
-    // ─── Tampilan Header / Banner ────────────────────────────────────────────────
+    private static void printRow(String borderColor, String content, int innerWidth) {
+        int visibleLen = stripAnsi(content).length();
+        int padding    = Math.max(0, innerWidth - visibleLen);
+        System.out.println(
+            borderColor + "║ " + RESET +
+            content +
+            " ".repeat(padding) +
+            borderColor + " ║" + RESET
+        );
+    }
+
+    private static String centerText(String coloredText, int innerWidth, int visibleLen) {
+        int totalPad = Math.max(0, innerWidth - visibleLen);
+        int left  = totalPad / 2;
+        int right = totalPad - left;
+        return " ".repeat(left) + coloredText + " ".repeat(right);
+    }
 
     private static void printBanner(Dokter dokter, Perawat perawat) {
-        int w = 52; // lebar dalam box
-        System.out.println();
-        printLine(CYAN, "╔", "═", "╗", w);
+        final int INNER = 64;
+        final int LINE  = INNER + 2;
 
         String[] logo = {
-            "  ██████╗██╗     ██╗███╗   ██╗██╗ ██████╗  ",
-            " ██╔════╝██║     ██║████╗  ██║██║██╔════╝  ",
-            " ██║     ██║     ██║██╔██╗ ██║██║██║       ",
-            " ██║     ██║     ██║██║╚██╗██║██║██║       ",
-            " ╚██████╗███████╗██║██║ ╚████║██║╚██████╗  ",
-            "  ╚═════╝╚══════╝╚═╝╚═╝  ╚═══╝╚═╝ ╚═════╝  "
+            " \u2588\u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2557      \u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2557     \u2588\u2588\u2557\u2588\u2588\u2588\u2557  \u2588\u2588\u2557\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2588\u2557",
+            " \u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2554\u2550\u2550\u2550\u2550\u2557\u2588\u2588\u2551     \u2588\u2588\u2554\u2550\u2550\u2550\u2550\u2557\u2588\u2588\u2551     \u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2551\u2588\u2588\u2551\u2588\u2588\u2554\u2550\u2550\u2550\u2550\u2557",
+            " \u2588\u2588\u2551  \u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2551     \u2588\u2588\u2551     \u2588\u2588\u2551     \u2588\u2588\u2551\u2588\u2588\u2554\u2588\u2588\u2557\u2588\u2588\u2551\u2588\u2588\u2551\u2588\u2588\u2551     ",
+            " \u2588\u2588\u2551  \u2588\u2588\u2551\u2588\u2588\u2554\u2550\u2550\u2557  \u2588\u2588\u2551     \u2588\u2588\u2551     \u2588\u2588\u2551     \u2588\u2588\u2551\u2588\u2588\u2551\u255a\u2588\u2588\u2588\u2588\u2551\u2588\u2588\u2551\u2588\u2588\u2551     ",
+            " \u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255d\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u255a\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2551\u2588\u2588\u2551 \u255a\u2588\u2588\u2588\u2551\u2588\u2588\u2551\u255a\u2588\u2588\u2588\u2588\u2588\u2588\u2557",
+            " \u255a\u2550\u2550\u2550\u2550\u2550\u255d \u255a\u2550\u2550\u2550\u2550\u2550\u2550\u255d\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u255d \u255a\u2550\u2550\u2550\u2550\u2550\u255d\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u255d\u255a\u2550\u255d\u255a\u2550\u255d  \u255a\u2550\u2550\u255d\u255a\u2550\u255d \u255a\u2550\u2550\u2550\u2550\u2550\u255d"
         };
+
+        printLine(CYAN, "╔", "═", "╗", LINE);
         for (String line : logo) {
-            printRow(CYAN, MAGENTA + BOLD + line + RESET, w);
+            printRow(CYAN, MAGENTA + BOLD + line + RESET, INNER);
         }
-        printRow(CYAN, centerText(GREEN + BOLD + "C A R E   H U B   S Y S T E M" + RESET, w, 30), w);
-        System.out.println(CYAN + "║" + RESET + "  " + GRAY + "─".repeat(w - 3) + RESET + "  " + CYAN + "║" + RESET);
-        printRow(CYAN, GRAY + "  \uD83D\uDC64 Dokter  : " + WHITE + dokter.getNama() + " (" + dokter.getSpesialisasi() + ")" + RESET, w);
-        printRow(CYAN, GRAY + "  \uD83C\uDFE5 Perawat : " + WHITE + perawat.getNama() + " (Shift " + perawat.getShift() + ")" + RESET, w);
-        printLine(CYAN, "╚", "═", "╝", w);
-        System.out.println();
+        printLine(CYAN, "╠", "═", "╣", LINE);
+
+        String title    = GREEN + BOLD + "D E L  C L I N I C  M A N A G E M E N T" + RESET;
+        int    titleLen = "D E L  C L I N I C  M A N A G E M E N T".length();
+        printRow(CYAN, centerText(title, INNER, titleLen), INNER);
+
+        printLine(CYAN, "╠", "═", "╣", LINE);
+
+        String dokterLine  = GRAY + "  Dokter  : " + WHITE + dokter.getNama()  + " (" + dokter.getSpesialisasi() + ")" + RESET;
+        String perawatLine = GRAY + "  Perawat : " + WHITE + perawat.getNama() + " (Shift " + perawat.getShift() + ")" + RESET;
+        printRow(CYAN, dokterLine,  INNER);
+        printRow(CYAN, perawatLine, INNER);
+
+        printLine(CYAN, "╚", "═", "╝", LINE);
     }
 
-    private static String centerText(String coloredText, int totalWidth, int visibleLen) {
-        int pad = (totalWidth - visibleLen) / 2;
-        return " ".repeat(Math.max(0, pad)) + coloredText + " ".repeat(Math.max(0, totalWidth - visibleLen - pad));
-    }
+    private static void printMenu(Queue<Pasien> antrean) {
+        final int INNER = 38;
+        final int LINE  = INNER + 2;
 
-    // ─── Tampilan Menu Utama ─────────────────────────────────────────────────────
-
-   private static void printMenu(Queue<Pasien> antrean) {
-        int w = 39;
-        printLine(YELLOW, "┌", "─", "┐", w);
-        printRow(YELLOW, centerText(WHITE + BOLD + "MENU UTAMA" + RESET, w - 1, 10), w - 1);
-        printDivider(YELLOW, w);
-        printRow(YELLOW, "  " + GREEN  + "[1]" + RESET + WHITE + " Pendaftaran Pasien Baru" + RESET, w - 1);
-        printRow(YELLOW, "  " + BLUE   + "[2]" + RESET + WHITE + " Panggil & Periksa Pasien" + RESET, w - 1);
-        printRow(YELLOW, "  " + CYAN   + "[3]" + RESET + WHITE + " Lihat Semua Rekam Medis" + RESET, w - 1);
-        // BARIS BARU: Tambahkan opsi Ganti Shift
-        printRow(YELLOW, "  " + MAGENTA+ "[4]" + RESET + WHITE + " Ganti Shift Perawat" + RESET, w - 1);
-        printRow(YELLOW, "  " + RED    + "[5]" + RESET + WHITE + " Keluar" + RESET, w - 1);
-        printLine(YELLOW, "└", "─", "┘", w);
-        String antreanInfo = antrean.isEmpty()
-            ? GRAY + "  Antrean saat ini: " + RED + "Kosong" + RESET
-            : GRAY + "  Antrean saat ini: " + GREEN + BOLD + antrean.size() + " pasien" + RESET;
-        System.out.println(antreanInfo);
         System.out.println();
+        printLine(YELLOW, "╔", "═", "╗", LINE);
+        String menuTitle    = WHITE + BOLD + "MENU UTAMA" + RESET;
+        int    menuTitleLen = "MENU UTAMA".length();
+        printRow(YELLOW, centerText(menuTitle, INNER, menuTitleLen), INNER);
+        printLine(YELLOW, "╠", "═", "╣", LINE);
+
+        printRow(YELLOW, " " + GREEN   + "[1]" + RESET + " Pendaftaran Pasien Baru",  INNER);
+        printRow(YELLOW, " " + BLUE    + "[2]" + RESET + " Panggil & Periksa Pasien", INNER);
+        printRow(YELLOW, " " + CYAN    + "[3]" + RESET + " Lihat Semua Rekam Medis",  INNER);
+        printRow(YELLOW, " " + MAGENTA + "[4]" + RESET + " Ganti Shift Perawat",      INNER);
+        printRow(YELLOW, " " + RED     + "[5]" + RESET + " Keluar",                   INNER);
+
+        printLine(YELLOW, "╚", "═", "╝", LINE);
+
+        String info = antrean.isEmpty()
+            ? RED + "Kosong" + RESET
+            : GREEN + BOLD + antrean.size() + " Pasien" + RESET;
+        System.out.println("\n  Antrean saat ini: " + info);
         System.out.print(GREEN + "  ➤ Pilih menu: " + WHITE);
     }
-    // ─── Tampilan Section Header ─────────────────────────────────────────────────
-
-    private static void printSectionHeader(String title, String color) {
-        System.out.println();
-        System.out.println(color + "┌─── " + BOLD + title + RESET + color + " " + "─".repeat(Math.max(0, 45 - title.length())) + "┐" + RESET);
-        System.out.println();
-    }
-
-    private static void printSectionFooter(String color) {
-        System.out.println();
-        System.out.println(color + "└" + "─".repeat(50) + "┘" + RESET);
-        System.out.println();
-    }
-
-    // ─── Input Helper dengan Label ───────────────────────────────────────────────
-
-    private static String inputField(Scanner sc, String label) {
-        System.out.print(GRAY + "  │  " + YELLOW + label + RESET + WHITE);
-        String val = sc.nextLine();
-        System.out.print(RESET);
-        return val;
-    }
-
-    // ─── Pesan Status ────────────────────────────────────────────────────────────
-
-    private static void printSuccess(String msg) {
-        System.out.println("\n  " + GREEN + "✔ " + BOLD + msg + RESET);
-    }
-
-    private static void printError(String msg) {
-        System.out.println("\n  " + RED + "✘ " + msg + RESET);
-    }
-
-    private static void printInfo(String msg) {
-        System.out.println("\n  " + BLUE + "ℹ " + msg + RESET);
-    }
-
-    private static void pause(Scanner sc) {
-        System.out.println();
-        System.out.print(GRAY + "  Tekan Enter untuk melanjutkan..." + RESET);
-        sc.nextLine();
-    }
-
-    // ─── Main ────────────────────────────────────────────────────────────────────
 
     public static void main(String[] args) {
-        Queue<Pasien> antreanKlinik = new LinkedList<>();
-        PasienMapper pasienMapper = new PasienMapper();
+        Queue<Pasien> antreanKlinik       = new LinkedList<>();
+        PasienMapper pasienMapper         = new PasienMapper();
         RekamMedisMapper rekamMedisMapper = new RekamMedisMapper();
         Scanner scanner = new Scanner(System.in);
 
-        Dokter dokterAktif = new Dokter(1, "dr. Joshua", "Umum");
+        Dokter  dokterAktif  = new Dokter(1, "dr. Joshua", "Umum");
         Perawat perawatAktif = new Perawat(1, "Suster Joice", "Pagi");
 
         boolean isRunning = true;
-
         while (isRunning) {
             clearScreen();
             printBanner(dokterAktif, perawatAktif);
@@ -172,174 +134,68 @@ public class Main {
             switch (pilihan) {
                 case "1":
                     clearScreen();
-                    printSectionHeader("PENDAFTARAN PASIEN BARU", GREEN);
-
-                    String nama = inputField(scanner, "Nama Pasien    : ");
-
-                    int umur = 0;
-                    String umurStr = inputField(scanner, "Umur Pasien    : ");
+                    System.out.println(GREEN + "\n  === PENDAFTARAN PASIEN BARU ===" + RESET);
+                    System.out.print(GRAY + "  │ Nama Pasien : " + WHITE); String nama = scanner.nextLine();
+                    System.out.print(GRAY + "  │ Umur Pasien : " + WHITE); String umurStr = scanner.nextLine();
                     try {
-                        umur = Integer.parseInt(umurStr);
-                    } catch (NumberFormatException e) {
-                        printError("Umur tidak valid. Menggunakan default 0.");
+                        Pasien p = pasienMapper.insertPasien(new Pasien(0, nama, Integer.parseInt(umurStr)));
+                        if (p.getId() != 0) {
+                            antreanKlinik.add(p);
+                            System.out.println(GREEN + "\n  ✔ Pasien berhasil didaftarkan ke antrean.");
+                        }
+                    } catch (Exception e) {
+                        System.out.println(RED + "\n  ✘ Error: Input tidak valid.");
                     }
-
-                    Pasien pasienBaru = new Pasien(0, nama, umur);
-                    Pasien pasienTerdaftar = pasienMapper.insertPasien(pasienBaru);
-
-                    if (pasienTerdaftar.getId() != 0) {
-                        antreanKlinik.add(pasienTerdaftar);
-                        printSuccess("Pasien " + WHITE + BOLD + pasienTerdaftar.getNama() + RESET + GREEN + " berhasil didaftarkan!");
-                        printInfo("ID Pasien: " + WHITE + BOLD + "#" + pasienTerdaftar.getId() + RESET + BLUE + "  |  Posisi antrean: #" + antreanKlinik.size());
-                    } else {
-                        printError("Gagal mendaftarkan pasien ke database.");
-                    }
-                    printSectionFooter(GREEN);
-                    pause(scanner);
+                    System.out.print(GRAY + "\n  Tekan Enter..."); scanner.nextLine();
                     break;
 
                 case "2":
                     clearScreen();
-                    printSectionHeader("PEMERIKSAAN PASIEN", BLUE);
-
-                    Pasien pasienDiperiksa = antreanKlinik.poll();
-                    if (pasienDiperiksa != null) {
-                        System.out.println("  " + BLUE + BOLD + "Pasien: " + WHITE + pasienDiperiksa.getNama() + RESET);
-                        System.out.println();
-                        System.out.println("  " + GRAY + "── Data Vital (diisi Perawat) ──────────────────");
-                        System.out.println();
-
-                        String suhuStr    = inputField(scanner, "Suhu (°C)      : ");
-                        String tensi      = inputField(scanner, "Tensi          : ");
-                        String bbStr      = inputField(scanner, "Berat Badan    : ");
-                        String tbStr      = inputField(scanner, "Tinggi Badan   : ");
-                        String keluhan    = inputField(scanner, "Keluhan        : ");
-
-                        System.out.println();
-                        System.out.println("  " + GRAY + "── Data Medis (diisi Dokter) ───────────────────");
-                        System.out.println();
-
-                        String diagnosis  = inputField(scanner, "Diagnosis      : ");
-                        String resepObat  = inputField(scanner, "Resep Obat     : ");
-
-                        double suhu       = parseDouble(suhuStr);
-                        double beratBadan = parseDouble(bbStr);
-                        double tinggiBadan = parseDouble(tbStr);
-
-                        RekamMedis rm = new RekamMedis(
-                            0,
-                            pasienDiperiksa,
-                            dokterAktif,
-                            perawatAktif,
-                            suhu,
-                            tensi,
-                            beratBadan,
-                            tinggiBadan,
-                            keluhan,
-                            diagnosis,
-                            resepObat
-                        );
-
-                        rekamMedisMapper.insertRekamMedis(rm);
-                        printSuccess("Rekam medis berhasil disimpan.");
-                        
-                        // ====== KODE TAMBAHAN UNTUK SURAT SAKIT ======
-                        System.out.println();
-                        System.out.print(GREEN + "  ➤ Cetak Surat Keterangan Sakit? (Y/T): " + WHITE);
-                        String cetakSurat = scanner.nextLine().trim();
-
-                        if (cetakSurat.equalsIgnoreCase("Y")) {
-                            System.out.println(CYAN + "\n  ==================================================" + RESET);
-                            System.out.println(CYAN + "  ║" + RESET + BOLD + "             SURAT KETERANGAN SAKIT             " + RESET + CYAN + "║" + RESET);
-                            System.out.println(CYAN + "  ║" + RESET + BOLD + "                 CARE HUB CLINIC                " + RESET + CYAN + "║" + RESET);
-                            System.out.println(CYAN + "  ==================================================" + RESET);
-                            System.out.println("    Dengan ini menerangkan bahwa pasien berikut:");
-                            System.out.println();
-                            System.out.println("    Nama      : " + pasienDiperiksa.getNama());
-                            System.out.println("    Suhu      : " + suhuStr + " °C");
-                            System.out.println("    Keluhan   : " + keluhan);
-                            System.out.println("    Diagnosis : " + diagnosis);
-                            System.out.println();
-                            System.out.println("    Membutuhkan waktu untuk beristirahat sehingga ");
-                            System.out.println("    " + YELLOW + BOLD + "berhalangan hadir untuk melakukan aktivitas" + RESET);
-                            System.out.println("    " + YELLOW + BOLD + "selama 1 (satu) hari penuh" + RESET + " sejak diperiksa.");
-                            System.out.println();
-                            System.out.println("    Demikian surat keterangan ini dibuat agar dapat ");
-                            System.out.println("    dipergunakan sebagaimana mestinya.");
-                            System.out.println(CYAN + "  ==================================================\n" + RESET);
-                        }
-                        // =============================================
+                    Pasien psk = antreanKlinik.poll();
+                    if (psk != null) {
+                        System.out.println(BLUE + "\n  === PEMERIKSAAN: " + psk.getNama() + " ===" + RESET);
+                        System.out.print(GRAY + "  │ Keluhan   : " + WHITE); String kel = scanner.nextLine();
+                        System.out.print(GRAY + "  │ Diagnosis : " + WHITE); String diag = scanner.nextLine();
+                        rekamMedisMapper.insertRekamMedis(new RekamMedis(0, psk, dokterAktif, perawatAktif,
+                            36.5, "120/80", 60.0, 170.0, kel, diag, "Paracetamol"));
+                        System.out.println(GREEN + "\n  ✔ Data rekam medis disimpan.");
                     } else {
-                        printError("Antrean kosong. Tidak ada pasien yang dapat dipanggil.");
+                        System.out.println(RED + "\n  ✘ Antrean kosong!");
                     }
-                    printSectionFooter(BLUE);
-                    pause(scanner);
+                    System.out.print(GRAY + "\n  Tekan Enter..."); scanner.nextLine();
                     break;
 
                 case "3":
                     clearScreen();
-                    printSectionHeader("RIWAYAT REKAM MEDIS", CYAN);
-                    System.out.println();
+                    System.out.println(CYAN + "\n  === RIWAYAT REKAM MEDIS ===" + RESET);
                     rekamMedisMapper.tampilkanSemuaRekamMedis();
-                    printSectionFooter(CYAN);
-                    pause(scanner);
+                    System.out.print(GRAY + "\n  Tekan Enter..."); scanner.nextLine();
                     break;
 
-               case "4":
+                case "4":
                     clearScreen();
-                    printSectionHeader("GANTI SHIFT PERAWAT", MAGENTA);
-                    
-                    System.out.println("  Pilih perawat yang bertugas:");
-                    System.out.println("  [1] Suster Joice (Pagi)");
-                    System.out.println("  [2] Suster Winda (Siang)");
-                    System.out.println("  [3] Suster Rahel (Malam)");
-                    System.out.println();
-                    
-                    String shiftPilihan = inputField(scanner, "Pilihan (1-3): ");
-                    
-                    if (shiftPilihan.equals("1")) {
-                        perawatAktif = new Perawat(1, "Suster Joice", "Pagi");
-                        printSuccess("Shift berhasil diganti ke Suster Joice (Pagi).");
-                    } else if (shiftPilihan.equals("2")) {
-                        perawatAktif = new Perawat(2, "Suster Winda", "Siang");
-                        printSuccess("Shift berhasil diganti ke Suster Winda (Siang).");
-                    } else if (shiftPilihan.equals("3")) {
-                        perawatAktif = new Perawat(3, "Suster Rahel", "Malam");
-                        printSuccess("Shift berhasil diganti ke Suster Rahel (Malam).");
-                    } else {
-                        printError("Pilihan tidak valid. Shift tidak diubah.");
-                    }
-                    
-                    printSectionFooter(MAGENTA);
-                    pause(scanner);
+                    System.out.println(MAGENTA + "\n  === GANTI SHIFT PERAWAT ===" + RESET);
+                    System.out.println("  1. Suster Joice (Pagi)\n  2. Suster Winda (Siang)\n  3. Suster Rahel (Malam)");
+                    System.out.print(GRAY + "\n  Pilih (1-3): " + WHITE);
+                    String s = scanner.nextLine();
+                    if      (s.equals("1")) perawatAktif = new Perawat(1, "Suster Joice", "Pagi");
+                    else if (s.equals("2")) perawatAktif = new Perawat(2, "Suster Winda", "Siang");
+                    else if (s.equals("3")) perawatAktif = new Perawat(3, "Suster Rahel", "Malam");
+                    System.out.println(GREEN + "\n  ✔ Petugas shift diperbarui.");
+                    System.out.print(GRAY + "\n  Tekan Enter..."); scanner.nextLine();
                     break;
 
-                // UBAH DARI case "4" MENJADI case "5"
                 case "5":
-                    clearScreen();
-                    System.out.println();
-                    System.out.println(CYAN + "  ╔══════════════════════════════════╗" + RESET);
-                    System.out.println(CYAN + "  ║" + RESET + GREEN + BOLD + "   Terima kasih! Sampai jumpa. 👋  " + RESET + CYAN + "║" + RESET);
-                    System.out.println(CYAN + "  ╚══════════════════════════════════╝" + RESET);
-                    System.out.println();
                     isRunning = false;
+                    System.out.println(CYAN + "\n  Terima kasih telah menggunakan DEL CLINIC! 👋\n" + RESET);
                     break;
 
                 default:
-                    // Pesan error diubah agar menyebutkan angka 1-5
-                    printError("Menu tidak tersedia. Silakan pilih 1–5.");
-                    pause(scanner);
+                    System.out.println(RED + "  ✘ Menu tidak tersedia.");
+                    try { Thread.sleep(800); } catch (Exception e) {}
                     break;
             }
         }
         scanner.close();
-    }
-
-    private static double parseDouble(String input) {
-        try {
-            return Double.parseDouble(input);
-        } catch (NumberFormatException e) {
-            return 0.0;
-        }
     }
 }
